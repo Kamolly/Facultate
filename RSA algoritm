@@ -1,0 +1,148 @@
+using System;
+using System.Numerics;
+using System.Text;
+
+class RSA
+{
+    public static BigInteger GCD(BigInteger a, BigInteger b)
+    {
+        while (b != 0)
+        {
+            BigInteger temp = b;
+            b = a % b;
+            a = temp;
+        }
+        return a;
+    }
+
+    public static BigInteger ExtendedEuclid(BigInteger a, BigInteger b, out BigInteger x, out BigInteger y)
+    {
+        if (b == 0)
+        {
+            x = 1;
+            y = 0;
+            return a;
+        }
+
+        BigInteger x1, y1;
+        BigInteger gcd = ExtendedEuclid(b, a % b, out x1, out y1);
+        x = y1;
+        y = x1 - (a / b) * y1;
+        return gcd;
+    }
+
+    public static BigInteger ModExp(BigInteger baseNum, BigInteger exp, BigInteger mod)
+    {
+        BigInteger result = 1;
+        baseNum = baseNum % mod;
+        while (exp > 0)
+        {
+            if ((exp % 2) == 1)
+                result = (result * baseNum) % mod;
+            exp = exp >> 1;
+            baseNum = (baseNum * baseNum) % mod;
+        }
+        return result;
+    }
+
+    public static bool MillerRabin(BigInteger n, int k)
+    {
+        if (n == 2 || n == 3) return true;
+        if (n <= 1 || n % 2 == 0) return false;
+
+        BigInteger d = n - 1;
+        int r = 0;
+        while (d % 2 == 0)
+        {
+            d /= 2;
+            r++;
+        }
+
+        for (int i = 0; i < k; i++)
+        {
+            BigInteger a = RandomBigInteger(2, n - 1);
+            BigInteger x = ModExp(a, d, n);
+            if (x == 1 || x == n - 1)
+                continue;
+
+            for (int j = 0; j < r - 1; j++)
+            {
+                x = ModExp(x, 2, n);
+                if (x == n - 1) break;
+            }
+
+            if (x != n - 1) return false;
+        }
+        return true;
+    }
+
+    public static BigInteger GenerateLargePrime(int bitLength, int k)
+    {
+        BigInteger prime;
+        Random rand = new Random();
+        do
+        {
+            prime = new BigInteger(bitLength, rand);
+        } while (!MillerRabin(prime, k));
+
+        return prime;
+    }
+
+
+    public static BigInteger Encrypt(BigInteger message, BigInteger e, BigInteger n)
+    {
+        return ModExp(message, e, n);
+    }
+
+
+    public static BigInteger Decrypt(BigInteger cipher, BigInteger d, BigInteger n)
+    {
+        return ModExp(cipher, d, n);
+    }
+
+    public static void Main()
+    {
+
+        int bitLength = 512;
+        int millerRabinIterations = 20;
+
+
+        BigInteger p = GenerateLargePrime(bitLength, millerRabinIterations);
+        BigInteger q = GenerateLargePrime(bitLength, millerRabinIterations);
+
+        BigInteger n = p * q;
+
+        BigInteger phi = (p - 1) * (q - 1);
+
+        BigInteger e = 65537; 
+        while (GCD(e, phi) != 1)
+        {
+            e += 2;
+        }
+
+        BigInteger d, temp;
+        ExtendedEuclid(e, phi, out d, out temp);
+        d = (d + phi) % phi; 
+
+        Console.WriteLine($"Cheia publică: (e = {e}, n = {n})");
+        Console.WriteLine($"Cheia privată: (d = {d}, n = {n})");
+
+        Console.Write("Introduceți un mesaj (număr): ");
+        BigInteger m = BigInteger.Parse(Console.ReadLine());
+        BigInteger c = Encrypt(m, e, n);
+        Console.WriteLine($"Mesajul criptat: {c}");
+
+        BigInteger decryptedMessage = Decrypt(c, d, n);
+        Console.WriteLine($"Mesajul decriptat: {decryptedMessage}");
+    }
+    public static BigInteger RandomBigInteger(int bitLength, BigInteger maxValue)
+    {
+        byte[] bytes = new byte[bitLength / 8];
+        Random rand = new Random();
+        rand.NextBytes(bytes);
+        BigInteger value = new BigInteger(bytes);
+        if (value < 0) value = -value; 
+        if (value > maxValue) value = maxValue; 
+        return value;
+    }
+}
