@@ -1,0 +1,82 @@
+using System;
+
+class Program
+{
+    public static string Criptare(string text, string cheie)
+    {
+        string alfabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        string criptat = "";
+        
+        foreach (char caracter in text.ToUpper())
+        {
+            if (alfabet.Contains(caracter))
+            {
+                int index = alfabet.IndexOf(caracter);
+                criptat += cheie[index];
+            }
+            else
+            {
+                criptat += caracter;
+            }
+        }
+        
+        return criptat;
+    }
+
+    public static string Decriptare(string text, string cheie)
+    {
+        string alfabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        string decriptat = "";
+        
+        foreach (char caracter in text.ToUpper())
+        {
+            if (cheie.Contains(caracter))
+            {
+                int index = cheie.IndexOf(caracter);
+                decriptat += alfabet[index];
+            }
+            else
+            {
+                decriptat += caracter;
+            }
+        }
+        
+        return decriptat;
+    }
+
+    public static void AnalizaFrecventei(string text)
+    {
+        var frecvente = new int[26]; 
+        text = text.ToUpper();
+        
+        foreach (char caracter in text)
+        {
+            if (char.IsLetter(caracter))
+            {
+                frecvente[caracter - 'A']++;
+            }
+        }
+
+        for (int i = 0; i < 26; i++)
+        {
+            Console.WriteLine($"{(char)(i + 'A')}: {frecvente[i]}");
+        }
+    }
+
+    static void Main(string[] args)
+    {
+        string alfabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        string cheie = "MIPODSQT...FV";
+        
+        string textOriginal = "EXEMPLU DE MESAJ CRIPTAT";
+        
+        string criptat = Criptare(textOriginal, cheie);
+        Console.WriteLine($"Criptat: {criptat}");
+      
+        string decriptat = Decriptare(criptat, cheie);
+        Console.WriteLine($"Decriptat: {decriptat}");
+        
+        Console.WriteLine("\nAnaliza frecvenței:");
+        AnalizaFrecventei(criptat);
+    }
+}
