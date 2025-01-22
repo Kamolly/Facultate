@@ -1,0 +1,53 @@
+using System;
+
+class Program
+{
+    static string Criptare(string text, int n)
+    {
+        char[] rezultat = new char[text.Length];
+        
+        for (int i = 0; i < text.Length; i++)
+        {
+            char ch = text[i];
+            if (Char.IsLetter(ch)) 
+            {
+                char start = Char.IsUpper(ch) ? 'A' : 'a';
+                rezultat[i] = (char)(start + (ch - start + n) % 26);
+            }
+            else
+            {
+                rezultat[i] = ch;
+            }
+        }
+
+        return new string(rezultat);
+    }
+
+    static string Decriptare(string text, int n)
+    {
+        return Criptare(text, 26 - n);
+    }
+
+    static void Criptanaliza(string textCifrat)
+    {
+        for (int n = 0; n < 26; n++) 
+        {
+            string textDecriptat = Decriptare(textCifrat, n);
+            Console.WriteLine($"Cheia {n}: {textDecriptat}");
+        }
+    }
+
+    static void Main()
+    {
+        string plaintext = "HELLO";
+        int n = 5;
+        string ciphertext = Criptare(plaintext, n);
+        Console.WriteLine($"Text criptat: {ciphertext}");
+
+        string decryptedText = Decriptare(ciphertext, n);
+        Console.WriteLine($"Text decriptat: {decryptedText}");
+
+        Console.WriteLine("\nCriptanaliza textului criptat:");
+        Criptanaliza(ciphertext);
+    }
+}
