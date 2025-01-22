@@ -1,0 +1,106 @@
+using System;
+using System.Collections.Generic;
+
+public class MerkleHellmanCryptosystem
+{
+    public static (List<int> publicKey, List<int> privateKey, int N) GenerateKeys(int n)
+    {
+        Random rand = new Random();
+        List<int> S = new List<int>();
+        List<int> M = new List<int>();
+
+        for (int i = 0; i < n; i++)
+        {
+            S.Add(rand.Next(1, 50)); // Secventa de numere aleatoare
+        }
+
+        int N = S[n - 1] * 2; // N este de obicei un numar mare
+        int T = 1;
+        for (int i = 0; i < n; i++)
+        {
+            M.Add(S[i] * T);
+            T = T * 2; // S transformata in M cu un coeficient de 2
+        }
+
+        return (S, M, N);
+    }
+
+    public static List<int> Encrypt(string message, List<int> publicKey, int N)
+    {
+        List<int> ciphertext = new List<int>();
+        foreach (char c in message)
+        {
+            int value = Convert.ToInt32(c);
+            List<int> encrypted = new List<int>();
+
+            for (int i = 0; i < publicKey.Count; i++)
+            {
+                if ((value & (1 << i)) != 0)
+                {
+                    encrypted.Add(publicKey[i]);
+                }
+            }
+
+            ciphertext.AddRange(encrypted);
+        }
+
+        return ciphertext;
+    }
+
+    public static string Decrypt(List<int> ciphertext, List<int> privateKey, int N)
+    {
+        List<int> decryptedMessage = new List<int>();
+
+        foreach (int encryptedValue in ciphertext)
+        {
+            for (int i = privateKey.Count - 1; i >= 0; i--)
+            {
+                if (encryptedValue >= privateKey[i])
+                {
+                    decryptedMessage.Add(1);
+                    encryptedValue -= privateKey[i];
+                }
+                else
+                {
+                    decryptedMessage.Add(0);
+                }
+            }
+        }
+
+        string result = "";
+        for (int i = 0; i < decryptedMessage.Count; i++)
+        {
+            result += decryptedMessage[i];
+        }
+
+        return result;
+    }
+
+    public static void Main()
+    {
+        var (publicKey, privateKey, N) = GenerateKeys(8);
+
+        Console.WriteLine("Cheia publica:");
+        foreach (var key in publicKey)
+        {
+            Console.Write(key + " ");
+        }
+        Console.WriteLine("\nCheia privata:");
+        foreach (var key in privateKey)
+        {
+            Console.Write(key + " ");
+        }
+
+        string message = "HELLO";
+        Console.WriteLine("\nMesaj: " + message);
+        var ciphertext = Encrypt(message, publicKey, N);
+        Console.WriteLine("Mesaj criptat:");
+        foreach (var value in ciphertext)
+        {
+            Console.Write(value + " ");
+        }
+
+        string decryptedMessage = Decrypt(ciphertext, privateKey, N);
+        Console.WriteLine("\nMesaj decriptat: " + decryptedMessage);
+    }
+}
